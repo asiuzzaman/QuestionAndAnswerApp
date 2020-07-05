@@ -38,6 +38,7 @@
             android:id="@+id/question_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:text="There are some question to be written"
             android:textSize="18sp" />
     </androidx.cardview.widget.CardView>
