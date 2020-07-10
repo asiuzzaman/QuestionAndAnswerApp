@@ -19,22 +19,26 @@ import com.android.volley.toolbox.Volley;
 import com.example.trivia.controller.AppController;
 import com.example.trivia.data.AnswerListAsyncResponse;
 import com.example.trivia.data.QuestionBank;
+import com.example.trivia.data.Score;
 import com.example.trivia.model.Question;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private TextView questionText,questionCounter;
+    private TextView questionText,questionCounter,textViewScoreCounter;
     private Button trueButton,falseButton;
     private ImageButton previousImageButton,nextImageButton;
     private int currentQuestionIndex=0;
     private List<Question>questionList;
+    private int scoreCounter=0;
+    private Score score;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        score=new Score();//instantiate our score object;
         initializeField();
         nextImageButton.setOnClickListener(this);
         previousImageButton.setOnClickListener(this);
@@ -55,11 +59,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initializeField() {
         questionText=findViewById(R.id.question_text);
         questionCounter=findViewById(R.id.question_count);
+        textViewScoreCounter=findViewById(R.id.score_counter);
         trueButton=findViewById(R.id.true_button);
         falseButton=findViewById(R.id.false_button);
         previousImageButton=findViewById(R.id.previous_button);
         nextImageButton=findViewById(R.id.next_button);
-
     }
 
     @Override
@@ -91,13 +95,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean actualAnswer=questionList.get(currentQuestionIndex).isAnswerTrue();
         int toastMessageId=0;
         if(userChoose==actualAnswer){
+            addPoints();
             fadeView();
             toastMessageId=R.string.correct_answer;
         }else {
+            deductPoints();
             shakeAnimation();
             toastMessageId=R.string.wrong_answer;
         }
         Toast.makeText(this,toastMessageId,Toast.LENGTH_SHORT).show();
+    }
+
+    private void addPoints() {
+        scoreCounter+=100;
+        score.setScore(scoreCounter);
+        textViewScoreCounter.setText(String.valueOf(score.getScore()));
+        Log.d("Score","update score "+score.getScore());
+    }
+
+    private void deductPoints(){
+        scoreCounter-=100;
+        if(scoreCounter<0) score.setScore(0);
+        else score.setScore(scoreCounter);
+        textViewScoreCounter.setText(String.valueOf(score.getScore()));
+        Log.d("Score","score after deduction: "+score.getScore());
     }
 
     private void updateQuestion() {
@@ -133,18 +154,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
     private void shakeAnimation(){
-        Animation shake= AnimationUtils.loadAnimation(this,R.anim.shake_animation);
         final CardView cardView=findViewById(R.id.cardView);
-        cardView.setAnimation(shake);
-        shake.setAnimationListener(new Animation.AnimationListener() {
+        AlphaAnimation alphaAnimation=new AlphaAnimation(1.0f,0.0f);
+        alphaAnimation.setDuration(350);
+        alphaAnimation.setRepeatCount(1);
+        alphaAnimation.setRepeatMode(Animation.REVERSE);
+        cardView.setAnimation(alphaAnimation);
+
+        alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                cardView.setBackgroundColor(Color.RED);
+                cardView.setCardBackgroundColor(Color.RED);
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                cardView.setBackgroundColor(Color.WHITE);
+                cardView.setCardBackgroundColor(Color.WHITE);
             }
 
             @Override
